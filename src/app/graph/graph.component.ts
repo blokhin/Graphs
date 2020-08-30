@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core'
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core'
 import { FormGroup, FormArray, FormControl, Validators, FormBuilder } from '@angular/forms'
 import { GraphFormService } from '../_services/_graph/graph-form.service'
 import { Subscription } from 'rxjs'
 import * as FunctionCurveEditor from "../../function-curve-editor";
-import { NgbPanelChangeEvent } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPanelChangeEvent, NgbAccordion } from '@ng-bootstrap/ng-bootstrap';
 import { ButtonsState } from '../_models/_graph/buttons-state';
 import { Subgraph, Graph } from '../_models/_graph';
 import { InterpolationType } from '../_models/_graph/interpolation-type';
@@ -22,7 +22,6 @@ import { JsonToGraphModel } from '../_models/_graph/json-to-graph-model';
 export class GraphComponent implements OnInit, OnDestroy {
   graphForm: FormGroup;
   graphFormSub: Subscription;
-  formInvalid: boolean = false;
   subgraphs: FormArray;
   xAxisPoints: FormArray;
   yAxisPoints: FormArray;
@@ -32,11 +31,9 @@ export class GraphComponent implements OnInit, OnDestroy {
   imageFileToUpload: File = null;
   jsonFileToUpload: File = null;
   
-  loading = false;
-  submitted = false;
-  returnUrl: string;
   error = '';
 
+  viewAllSubgraphsActive: boolean = false;
   axisButtonActive: boolean = false;
 
   currentActivePanelId: number = undefined;
@@ -47,6 +44,8 @@ export class GraphComponent implements OnInit, OnDestroy {
     xAxis: false,
     yAxis: false
   };
+
+  @ViewChild('acc') accordion: NgbAccordion;
 
   constructor(private graphFormService: GraphFormService,
               private graphMathService: GraphMathService,
@@ -193,8 +192,10 @@ export class GraphComponent implements OnInit, OnDestroy {
       eState.yAxisPoints.push({x:calculatedGraph.yAxisPoints[i].xCoordinate, y:calculatedGraph.yAxisPoints[i].yCoordinate});    
     }
 
-    if(this.currentActivePanelId == undefined
-      || this.currentActivePanelId >= calculatedGraph.subgraphs.length)
+    this.currentActivePanelId = 0;
+    this.accordion.activeIds = this.currentActivePanelId.toString();
+
+    if(this.currentActivePanelId >= calculatedGraph.subgraphs.length)
     {
       eState.knots = [];
       this.widget.setConnected(false);
@@ -203,9 +204,28 @@ export class GraphComponent implements OnInit, OnDestroy {
     {
       eState.knots = calculatedGraph.subgraphs[this.currentActivePanelId].knots;
       eState.interpolationMethod = calculatedGraph.subgraphs[this.currentActivePanelId].interpolationType;
+      this.widget.setConnected(true);
     }
 
     this.widget.setEditorState(eState);  
+  }
+
+  checkViewAllSubgraphs(event: any)
+  {
+    if(event.currentTarget.checked)
+    {
+      this.viewAllSubgraphsActive = true;
+    }
+    else
+    {
+      this.viewAllSubgraphsActive = false;
+    }
+
+    const eState = this.widget.getEditorState();
+    const graphData = this.graphForm.value as Graph;
+    eState.curvesState = this.graphFormService.getSubgraphsState(graphData.subgraphs);
+    eState.viewAllOptionActive = this.viewAllSubgraphsActive;
+    this.widget.setEditorState(eState); 
   }
 
   saveGraph() {

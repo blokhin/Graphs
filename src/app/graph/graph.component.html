@@ -18,7 +18,7 @@
       <input formControlName="yAxisName" class="form-control" placeholder="Y-axis name" required>
       <span class="mt-2"></span>
       <div class="input-group" formGroupName="originPoint">
-          <button type="button" id="btn_origin" class="btn btn-warning" data-toggle="button" aria-pressed="false" (click)="toggleOrigin($event)">Origin</button>
+          <button type="button" id="btn_origin" class="btn btn-warning" data-toggle="button" aria-pressed="false" (click)="toggleOrigin($event)">Set Origin</button>
           <input type="number" formControlName="xValue" class="form-control" placeholder="X" required/>
           <input type="number" formControlName="yValue" class="form-control" placeholder="Y" required/>
           <input type="number" hidden formControlName="xCoordinate" class="form-control" placeholder="X" required/>
@@ -43,7 +43,7 @@
 
       <span class="mt-2"></span>   
       <button class="btn-primary" (click)="addSubgraph()">Add Subgraph</button>
-      <ngb-accordion class="d-flex flex-column" [closeOthers]="true" (panelChange)="toggleAccordian($event)">
+      <ngb-accordion #acc="ngbAccordion" class="d-flex flex-column" [closeOthers]="true" (panelChange)="toggleAccordian($event)">
           <ngb-panel class="d-flex" *ngFor="let subgraph of subgraphs?.controls; let i = index" id="{{i}}">
           <ng-template ngbPanelHeader let-opened="opened">
               <div class="d-flex align-items-center justify-content-between">
@@ -57,6 +57,14 @@
           </ng-template>
           </ngb-panel>
       </ngb-accordion> 
+
+      <div class="d-flex pl-2 pr-2 mt-2">
+        <div class="custom-control custom-checkbox d-flex ">
+            <input type="checkbox" class="custom-control-input" id="viewAllSubgraphs" (change)="checkViewAllSubgraphs($event)">
+            <label class="custom-control-label" for="viewAllSubgraphs">View all subgraphs</label>                
+        </div>
+      </div>
+
       <span class="mt-2"></span>
       <button type="submit" class="btn-primary" (click)="saveGraph()" [disabled]="graphForm.invalid">Save As...</button>
       <div>
